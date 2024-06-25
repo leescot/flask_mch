@@ -15,7 +15,7 @@
 <div id="result" class="mt-4" style="display: none;">
     <h2>處理結果:</h2>
     <div class="mb-2">
-        <button id="copyButton" class="btn btn-secondary">複製結果</button>
+        <button id="copyButton" class="btn btn-secondary">一鍵複製到減貼簿</button>
     </div>
     <div id="charCount" class="mb-2"></div>
     <pre id="resultText"></pre>
@@ -38,7 +38,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
         if (data.success) {
             document.getElementById('result').style.display = 'block';
             document.getElementById('resultText').textContent = data.result;
-            document.getElementById('charCount').innerHTML = `輸入字元數: ${data.input_count}<br>輸出字元數: ${data.output_count}<br>減少字元數: ${data.reduced_count}`;
+            document.getElementById('charCount').innerHTML = `減肥成功！輸入字元數 <span style="color: red;">${data.input_count}</span> - 減少字元數 <span style="color: green;">${data.reduced_count}</span> = 輸出字元數 <span style="color: red;">${data.output_count}</span>`;
         } else {
             alert('Error: ' + data.error);
         }
