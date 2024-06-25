@@ -15,9 +15,6 @@
   "functions": {
     "app.py": {
       "maxDuration": 80
-    },
-    "utils.py": {
-      "maxDuration": 80
     }
   }
 }
