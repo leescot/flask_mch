@@ -3,7 +3,7 @@
 {% block title %}首頁 - 檢驗報告減肥器{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">檢驗報告減肥器</h1>
+<h3 class="mb-4">檢驗報告減肥器</h3>
 <form id="reportForm">
     <div class="mb-3">
         <label for="reportText" class="form-label">請輸入檢驗報告:</label>
@@ -13,11 +13,13 @@
 </form>
 
 <div id="result" class="mt-4" style="display: none;">
-    <h2>處理結果:</h2>
-    <div class="mb-2">
-        <button id="copyButton" class="btn btn-secondary">一鍵複製到減貼簿</button>
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="me-3 mb-0">處理結果:</h2>
+        <h3 id="charCount" class="mb-0"></h3>
     </div>
-    <div id="charCount" class="mb-2"></div>
+    <div class="mb-2">
+        <button id="copyButton" class="btn btn-secondary">一鍵複製到剪貼簿</button>
+    </div>
     <pre id="resultText"></pre>
 </div>
 {% endblock %}
@@ -38,7 +40,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
         if (data.success) {
             document.getElementById('result').style.display = 'block';
             document.getElementById('resultText').textContent = data.result;
-            document.getElementById('charCount').innerHTML = `減肥成功！輸入字元數 <span style="color: red;">${data.input_count}</span> - 減少字元數 <span style="color: green;">${data.reduced_count}</span> = 輸出字元數 <span style="color: red;">${data.output_count}</span>`;
+            document.getElementById('charCount').innerHTML = `輸入字元數 <span style="color: red;">${data.input_count}</span> - 減少字元數 <span style="color: green;">${data.reduced_count}</span> = 輸出字元數 <span style="color: red;">${data.output_count}</span>`;
         } else {
             alert('Error: ' + data.error);
         }
