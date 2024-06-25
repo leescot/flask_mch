@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}首頁 - 檢驗報告減肥器{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">檢驗報告減肥器</h1>
+<form id="reportForm">
+    <div class="mb-3">
+        <label for="reportText" class="form-label">請輸入檢驗報告:</label>
+        <textarea class="form-control" id="reportText" name="report" rows="10" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">處理報告</button>
+</form>
+
+<div id="result" class="mt-4" style="display: none;">
+    <h2>處理結果:</h2>
+    <div class="mb-2">
+        <button id="copyButton" class="btn btn-secondary">複製結果</button>
+    </div>
+    <div id="charCount" class="mb-2"></div>
+    <pre id="resultText"></pre>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    var formData = new FormData(this);
+    
+    fetch('/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('resultText').textContent = data.result;
+            document.getElementById('charCount').innerHTML = `輸入字元數: ${data.input_count}<br>輸出字元數: ${data.output_count}<br>減少字元數: ${data.reduced_count}`;
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing the report.');
+    });
+});
+
+document.getElementById('copyButton').addEventListener('click', function() {
+    var resultText = document.getElementById('resultText').textContent;
+    navigator.clipboard.writeText(resultText).then(function() {
+        alert('已複製結果到剪貼板');
+    }, function(err) {
+        console.error('無法複製: ', err);
+    });
+});
+</script>
+{% endblock %}
