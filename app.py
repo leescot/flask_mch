@@ -7,8 +7,10 @@ app = Flask(__name__)
 def index():
     if request.method == 'POST':
         report = request.form['report']
+        use_abbreviations = request.form.get('use_abbreviations', 'false').lower() == 'true'
+        use_new_format = request.form.get('use_new_format', 'false').lower() == 'true'
         try:
-            processed_report = process_report(report)
+            processed_report = process_report(report, use_abbreviations=use_abbreviations, use_new_format=use_new_format)
             input_count = len(report)
             output_count = len(processed_report)
             reduced_count = input_count - output_count

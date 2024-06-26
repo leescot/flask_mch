@@ -9,7 +9,8 @@
         <label for="reportText" class="form-label">請輸入檢驗報告:</label>
         <textarea class="form-control" id="reportText" name="report" rows="10" required></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">處理報告</button>
+    <button type="submit" class="btn btn-primary" id="basicProcessButton">處理報告</button>
+    <button type="button" class="btn btn-info" id="advancedProcessButton">處理並使用縮寫</button>
 </form>
 
 <div id="result" class="mt-4" style="display: none;">
@@ -26,10 +27,10 @@
 
 {% block scripts %}
 <script>
-document.getElementById('reportForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    var formData = new FormData(this);
+function processReport(useAbbreviations, useNewFormat) {
+    var formData = new FormData(document.getElementById('reportForm'));
+    formData.append('use_abbreviations', useAbbreviations);
+    formData.append('use_new_format', useNewFormat);
     
     fetch('/', {
         method: 'POST',
@@ -49,6 +50,15 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
         console.error('Error:', error);
         alert('An error occurred while processing the report.');
     });
+}
+
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    processReport(false, false);
+});
+
+document.getElementById('advancedProcessButton').addEventListener('click', function() {
+    processReport(true, true);
 });
 
 document.getElementById('copyButton').addEventListener('click', function() {

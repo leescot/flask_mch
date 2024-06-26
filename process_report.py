@@ -9,8 +9,7 @@ def find_datetime_positions(line: str) -> List[Tuple[int, int]]:
     print(f"Date-time positions found: {positions}")
     return positions
 
-def process_special_table(table: List[str]) -> List[str]:
-    print("Processing special table format...")
+def process_special_table_original(table: List[str]) -> List[str]:
     output = []
     pattern = re.compile(r'^(.+?)\s{10,}(.+?)\((\d{8})\)$')
     
@@ -22,6 +21,79 @@ def process_special_table(table: List[str]) -> List[str]:
             output.append(f"[{formatted_date}] {item.strip()}:{result.strip()}")
     
     return output
+
+def process_special_table_new(table: List[str]) -> List[str]:
+    print("Processing special table with new format...")
+    output = []
+    pattern = re.compile(r'^(.+?)\s{10,}(.+?)\((\d{8})\)$')
+    
+    urine_strip_items = []
+    urine_sediment_items = []
+    current_date = None
+    urine_strip_keys = set(['Occult Blood', 'Ketone', 'Nitrite', 'Leucocyte esterase', 'Color', 'Turbidity', 'Glucose', 'Protein', 'Bilirubin', 'Urobilinogen', 'pH', 'Sp.gr'])
+    urine_sediment_keys = set(['Cast', 'RBC', 'WBC', 'EP.cell', 'Bacteria', 'Yeast', 'Trichomonas', 'Sperm', 'Crystal'])
+
+    def flush_current_section():
+        nonlocal urine_strip_items, urine_sediment_items, current_date, output
+        if urine_strip_items:
+            output.append(f"[{current_date}] Urine strip: {', '.join(urine_strip_items)}")
+            urine_strip_items = []
+        if urine_sediment_items:
+            output.append(f"[{current_date}] Urine sediment: {', '.join(urine_sediment_items)}")
+            urine_sediment_items = []
+
+    for line in table[2:]:  # Skip the header lines
+        match = pattern.match(line.strip())
+        if match:
+            item, result, date = match.groups()
+            item = item.strip()
+            result = result.strip()
+            formatted_date = f"{date[:4]}/{date[4:6]}/{date[6:]}"
+
+            if formatted_date != current_date:
+                flush_current_section()
+                current_date = formatted_date
+
+            if item == 'Urine strip' or item == 'Urine sediment':
+                # Skip these lines as they are just headers
+                continue
+            elif item in urine_strip_keys and result != '-':
+                urine_strip_items.append(f"{item}:{result}")
+            elif item in urine_sediment_keys and result != '-':
+                urine_sediment_items.append(f"{item}:{result}")
+            elif result not in ['***', '-']:  # Skip lines with '***' or '-' as the result
+                flush_current_section()
+                output.append(f"[{formatted_date}] {item}:{result}")
+
+    flush_current_section()  # Flush any remaining items
+    
+    return output
+
+def process_report(report: str, use_abbreviations: bool = False, use_new_format: bool = False) -> str:
+    print("Processing report...")
+    tables = split_tables(report)
+    all_results = []
+
+    for i, table in enumerate(tables):
+        print(f"Processing table {i+1}")
+        try:
+            if "檢驗(鏡檢,血清)項目:" in table[0]:
+                if use_new_format:
+                    table_results = process_special_table_new(table)
+                else:
+                    table_results = process_special_table_original(table)
+            else:
+                table_results = process_regular_table(table)
+            all_results.extend(table_results)
+        except Exception as e:
+            print(f"Error processing table {i+1}: {e}")
+
+    result = '\n'.join(all_results)
+    
+    if use_abbreviations:
+        result = apply_abbreviations(result)
+    
+    return result
 
 def process_regular_table(table: List[str]) -> List[str]:
     print(f"Processing regular table with {len(table)} lines...")
@@ -78,20 +150,19 @@ def split_tables(report: str) -> List[List[str]]:
     print(f"Total tables found: {len(tables)}")
     return tables
 
-def process_report(report: str) -> str:
-    print("Processing report...")
-    tables = split_tables(report)
-    all_results = []
-
-    for i, table in enumerate(tables):
-        print(f"Processing table {i+1}")
-        try:
-            if "檢驗(鏡檢,血清)項目:" in table[0]:
-                table_results = process_special_table(table)
-            else:
-                table_results = process_regular_table(table)
-            all_results.extend(table_results)
-        except Exception as e:
-            print(f"Error processing table {i+1}: {e}")
-
-    return '\n'.join(all_results)
+def apply_abbreviations(text: str) -> str:
+    abbreviations = {
+        'Lymphocyte': 'Lym',
+        'Monocyte': 'Mono',
+        'Eosinophil': 'Eos',
+        'Basophil': 'Baso',
+        'Platelet': 'PLT',
+        'Creatinine': 'Cr',
+        'K mmol/L': 'K',
+        'estimated Ccr(MDRD)': 'eCcr(MDRD)'
+    }
+    
+    for full, abbr in abbreviations.items():
+        text = text.replace(full, abbr)
+    
+    return text
