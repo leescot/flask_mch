@@ -134,7 +134,7 @@ def split_tables(report: str) -> List[List[str]]:
 
     # print("Splitting tables...")
     for i, line in enumerate(lines):
-        print(f"Line {i}: {line}")
+        # print(f"Line {i}: {line}")
         if header_pattern.match(line) or special_header_pattern.match(line):
             if current_table:
                 tables.append(current_table)
